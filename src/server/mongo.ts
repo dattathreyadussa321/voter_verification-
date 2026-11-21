@@ -1,4 +1,4 @@
-﻿import 'dotenv/config';
+import 'dotenv/config';
 import dns from 'node:dns';
 import { MongoClient, type ClientSession, type Document, type Filter } from 'mongodb';
 import { AsyncLocalStorage } from 'node:async_hooks';

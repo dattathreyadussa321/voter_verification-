@@ -12,3 +12,6 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 .migration-temp/
+
+*.zip
+server.js
