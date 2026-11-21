@@ -36,7 +36,25 @@ import type {
 
 const PORT = Number(process.env.PORT ?? 3000);
 const app = express();
+
+// CORS configuration for separate frontend (Netlify) & backend (Render) deployments
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 app.use(express.json({ limit: '15mb' }));
+
+// Health check endpoint for uptime monitors and deployment platforms
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 const asyncRoute =
   (handler: express.RequestHandler): express.RequestHandler =>

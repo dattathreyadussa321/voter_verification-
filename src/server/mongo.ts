@@ -14,7 +14,8 @@ if (process.env.MONGODB_DNS_SERVERS) {
 const uri = process.env.MONGODB_URI;
 if (!uri) throw new Error('MONGODB_URI is required. Configure it in .env.');
 export const client = new MongoClient(uri, { serverSelectionTimeoutMS: 15000 });
-const database = client.db(process.env.MONGODB_DB_NAME || 'boothguard');
+const dbName = process.env.MONGODB_DB_NAME?.trim() || 'boothguard';
+const database = client.db(dbName);
 const sessions = new AsyncLocalStorage<ClientSession>();
 const options = () => ({ session: sessions.getStore() });
 export const collection = (name: string) => database.collection(name);

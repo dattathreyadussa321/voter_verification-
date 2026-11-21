@@ -24,6 +24,17 @@ export function setStoredToken(token: string | null): void {
   }
 }
 
+const RAW_API_BASE = (import.meta.env.VITE_API_URL as string | undefined) || '';
+const API_BASE = RAW_API_BASE.replace(/\/+$/, '');
+
+export function getApiUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return API_BASE ? `${API_BASE}${cleanPath}` : cleanPath;
+}
+
 export async function apiFetch<T>(
   url: string,
   options: RequestInit = {},
@@ -38,7 +49,8 @@ export async function apiFetch<T>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(url, {
+  const fullUrl = getApiUrl(url);
+  const response = await fetch(fullUrl, {
     ...options,
     headers,
   });
@@ -56,7 +68,8 @@ export async function downloadAuthenticatedFile(url: string, fallbackFileName: s
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
-  const response = await fetch(url, { headers });
+  const fullUrl = getApiUrl(url);
+  const response = await fetch(fullUrl, { headers });
   if (!response.ok) {
     throw new Error('Failed to download report.');
   }
@@ -76,6 +89,15 @@ export async function downloadAuthenticatedFile(url: string, fallbackFileName: s
 }
 
 export function buildWsUrl(token: string): string {
+  if (API_BASE) {
+    try {
+      const url = new URL(API_BASE);
+      const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${wsProtocol}//${url.host}/ws?token=${encodeURIComponent(token)}`;
+    } catch {
+      // Fallback if API_BASE is relative or malformed
+    }
+  }
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${protocol}//${window.location.host}/ws?token=${encodeURIComponent(token)}`;
 }
