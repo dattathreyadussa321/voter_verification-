@@ -3,9 +3,12 @@ services:
     name: boothguard-backend
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npm run build
     startCommand: npm start
+    healthCheckPath: /api/health
     envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -16,5 +19,3 @@ services:
         value: boothguard
       - key: SEED_DEMO_DATA
         value: "true"
-      - key: MONGODB_DNS_SERVERS
-        value: "1.1.1.1,8.8.8.8"

@@ -1,5 +1,6 @@
 ﻿import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import {
   connectDatabase,
   closeDatabase,
@@ -59,10 +60,27 @@ const emptyStatus = {
   dead_note: null,
 };
 
+async function loadDemoData(): Promise<any> {
+  const candidates = [
+    path.resolve(process.cwd(), 'src/server/demo-data.json'),
+    new URL('./demo-data.json', import.meta.url),
+    new URL('./src/server/demo-data.json', import.meta.url),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const content = await fs.readFile(candidate, 'utf8');
+      return JSON.parse(content);
+    } catch {
+      // Continue searching next candidate path
+    }
+  }
+  throw new Error('Unable to locate demo-data.json');
+}
+
 export async function initializeDatabase() {
   await connectDatabase();
   if (process.env.SEED_DEMO_DATA !== 'true') return;
-  const demo = JSON.parse(await fs.readFile(new URL('./demo-data.json', import.meta.url), 'utf8'));
+  const demo = await loadDemoData();
   await transaction(async () => {
     if ((await count('booths')) || (await count('admins'))) return;
     for (const name of ['booths', 'officers', 'voters', 'audit_logs', 'admins']) {
