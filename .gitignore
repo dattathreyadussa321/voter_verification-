@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local SQLite artifacts are no longer used.
+data/*.db
+data/*.db-shm
+data/*.db-wal
+.migration-temp/
